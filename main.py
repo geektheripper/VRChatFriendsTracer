@@ -97,6 +97,4 @@ class VRchat:
 
 if __name__ == '__main__':
     vrc=VRchat()
-    msg = Thread(target=vrc.rcv_redis_message)
-    msg.start()
-    #vrc.loop()
+    vrc.loop()
