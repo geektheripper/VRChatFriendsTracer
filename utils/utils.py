@@ -1,5 +1,4 @@
 #coding=utf-8
-from requests import RequestException
 import logging
 import sys
 import os
@@ -11,22 +10,20 @@ def resp2json(func):
         def wrapper(*args, retry=3, **kwargs):
             try:
                 resp = func(*args, **kwargs)
-            except RequestException  as e:
-                logging.info(e)
+            except Exception  as e:
+                logging.exception(e)
                 while (retry > 0):
-                    logging.warning("Retry times remain %d" % retry)
+                    logging.info("Retry times remain %d" % retry)
                     retry -= 1
                     return wrapper(*args, retry=retry, **kwargs)
             else:
                 if resp.status_code == 200:
-                    #logging.info(resp.text)
                     pass
                 elif resp.status_code == 401:
-                    logging.error("HTTP ERROR 401", resp.text)
-                    if os.path.exists('session.pkl'):
-                        os.remove("session.pkl")
+                    logging.error("HTTP %s %s"%(resp.status_code,resp.text))
+                    raise Exception("Unauthorized")
                 else:
-                    logging.info("CODE", resp.status_code, resp.text)
+                    logging.warning("HTTP %s %s"%(resp.status_code,resp.text))
                 return resp.json()
         return wrapper
 

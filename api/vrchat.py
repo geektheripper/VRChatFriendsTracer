@@ -22,7 +22,12 @@ class VRChatAPI:
         if session:
             api=VRChatAPI(session)
         else:
-            session=VRChatAPI.create_session(VRC_USERNAME,VRC_PASSWORD)
+            try:
+                session=VRChatAPI.create_session(VRC_USERNAME,VRC_PASSWORD)
+            except Exception as e:
+                if str(e)=='Unauthorized':
+                    logging.info("登录失败，请检查帐号密码")
+                    sys.exit("初始化失败")
             api=VRChatAPI(session)
         return api
     @staticmethod

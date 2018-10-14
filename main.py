@@ -1,5 +1,6 @@
 #coding=utf-8
-import pickle
+
+from concurrent import futures
 from api.vrchat import VRChatAPI
 from  threading import Thread
 from utils.utils import logging
@@ -7,6 +8,7 @@ from settings import *
 from models.redis_model import UserModel
 from models.mysql_model import Log
 from models import rserver
+import pickle
 import time
 
 class VRchat:
@@ -78,9 +80,19 @@ class VRchat:
         msg = Thread(target=self.rcv_redis_message)
         msg.start()
         while True:
-            thread = Thread(target=self.check_status)
-            thread.start()
-            time.sleep(LOOP_DELAY)
+
+           with futures.ThreadPoolExecutor(max_workers=1) as executor:
+               f=executor.submit(self.check_status)
+
+           time.sleep(LOOP_DELAY)
+
+           try:
+                r=f.result()
+           except Exception as e:
+                logging.exception(e)
+                logging.info("尝试重新初始化")
+                self.__init__()
+
 if __name__ == '__main__':
     vrc=VRchat()
     vrc.loop()
