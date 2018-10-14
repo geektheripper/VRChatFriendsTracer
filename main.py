@@ -1,5 +1,5 @@
 #coding=utf-8
-
+import os
 from concurrent import futures
 from api.vrchat import VRChatAPI
 from  threading import Thread
@@ -91,8 +91,12 @@ class VRchat:
            except Exception as e:
                 logging.exception(e)
                 logging.info("尝试重新初始化")
+                if os.path.exists("session.pkl"):
+                    os.remove("session.pkl")
                 self.__init__()
 
 if __name__ == '__main__':
     vrc=VRchat()
-    vrc.loop()
+    msg = Thread(target=vrc.rcv_redis_message)
+    msg.start()
+    #vrc.loop()
