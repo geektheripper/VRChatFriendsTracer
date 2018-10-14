@@ -3,19 +3,9 @@ from requests import RequestException
 import logging
 import sys
 import os
-logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %I:%M:%S',level=logging.INFO,stream=sys.stdout)
 import pickle
 
-def println(obj):
-    if isinstance(obj, list):
-        for i in obj:
-           println(i)
-    elif isinstance(obj, dict):
-           for k,v in obj.items():
-               println("%-50s:%-50s"%(k,v))
-    else:
-        print(obj)
-
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %I:%M:%S',level=logging.INFO,stream=sys.stdout)
 
 def resp2json(func):
         def wrapper(*args, retry=3, **kwargs):
@@ -36,7 +26,7 @@ def resp2json(func):
                     if os.path.exists('session.pkl'):
                         os.remove("session.pkl")
                 else:
-                    logging.info("CODE", resp.status_code, resp.status_code)
+                    logging.info("CODE", resp.status_code, resp.text)
                 return resp.json()
         return wrapper
 

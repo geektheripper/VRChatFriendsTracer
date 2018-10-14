@@ -1,5 +1,4 @@
 #coding=utf-8
-from utils.utils import *
 import requests
 from base64 import b64encode
 from utils.utils import *
@@ -75,13 +74,6 @@ class VRChatAPI:
     def get_user_info(self,user_id):
         resp=self.s.get("https://www.vrchat.net/api/1/users/{}".format(user_id))
         return resp
-
-    @resp2json
-    def playemoderations(self,type):
-        params={"type":type}
-        resp=self.s.get('https://www.vrchat.net/api/1/auth/user/playermoderations',params=params)
-        return resp
-
 
     @resp2json
     def get_world_info(self,wrld_id):

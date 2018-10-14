@@ -1,5 +1,4 @@
 #coding=utf-8
-from utils import *
 import pickle
 from api.vrchat import VRChatAPI
 from  threading import Thread
@@ -9,6 +8,7 @@ from models.redis_model import UserModel
 from models.mysql_model import Log
 from models import rserver
 import time
+
 class VRchat:
     def __init__(self):
         self.api=VRChatAPI.init()
@@ -56,7 +56,7 @@ class VRchat:
     def rcv_redis_message(self):
         pubsub = self.rserver.pubsub()
         pubsub.psubscribe('*')
-        print('Starting message loop')
+        logging.info('Starting message loop')
         while True:
             message = pubsub.get_message()
             if message:
