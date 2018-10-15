@@ -1,6 +1,8 @@
 #coding=utf-8
 import requests
 from base64 import b64encode
+
+from secure import VRC_USERNAME, VRC_PASSWORD
 from utils.utils import *
 from settings import *
 class VRChatAPI:

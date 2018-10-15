@@ -1,9 +1,10 @@
 import discord
 from bot.modules.utils import priv
 import re
-from settings import DISCORD_TOKEN
+from secure import DISCORD_TOKEN
 from bot.modules import backgroundTasks
-class MyClient(discord.Client):
+
+class VRCBot(discord.Client):
     current_channel=None
     msg_level=2
     async def on_ready(self):
@@ -39,6 +40,3 @@ class MyClient(discord.Client):
                 await message.channel.send('处理命令出错')
             else:
                 await message.channel.send('当前显示等级 %s'%msg)
-
-client = MyClient()
-client.run(DISCORD_TOKEN)

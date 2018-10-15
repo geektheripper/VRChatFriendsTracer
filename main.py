@@ -1,10 +1,12 @@
 #coding=utf-8
 import os
+from multiprocessing import Process
 from concurrent import futures
 from api.vrchat import VRChatAPI
 from  threading import Thread
 from utils.utils import logging
 from settings import *
+from secure import DISCORD_TOKEN
 from models.redis_model import UserModel
 from models.mysql_model import Log,StatusText
 from models import rserver
@@ -97,6 +99,12 @@ class VRchat:
                     os.remove("session.pkl")
                 self.__init__()
 
+def bot():
+    from bot.bot import VRCBot
+    bot = VRCBot()
+    bot.run(DISCORD_TOKEN)
 if __name__ == '__main__':
+    t=Process(target=bot)
+    t.start()
     vrc=VRchat()
     vrc.loop()
