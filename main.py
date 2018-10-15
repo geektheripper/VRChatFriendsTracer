@@ -6,20 +6,22 @@ from  threading import Thread
 from utils.utils import logging
 from settings import *
 from models.redis_model import UserModel
-from models.mysql_model import Log
+from models.mysql_model import Log,StatusText
 from models import rserver
 import pickle
 import time
-
 class VRchat:
     def __init__(self):
         self.api=VRChatAPI.init()
         self.rserver=rserver
-    def log(self,User,text,target):
-        logging.info(MSG_TEXT_FORMAT%(User.displayName,text,target))
-        l=Log(User.id,User.displayName,text,target)
-        t=Thread(target=l.save)
+    def logger(self,User,text,target):
+        msg=MSG_TEXT_FORMAT%(User.displayName,text.value,target)
+        logging.info(msg)
+        log=Log(User.id,User.displayName,text.value,target)
+        self.rserver.lpush(REDIS_NOTIFICATION_QUEUE,pickle.dumps(log))
+        t=Thread(target=log.save)
         t.start()
+
 
     def check_status(self):
         data=self.api.get_online_friends()
@@ -28,17 +30,17 @@ class VRchat:
             keyname=REDIS_KEY_UID%User.id
             if not self.rserver.exists(keyname):
                 self.rserver.set(keyname, pickle.dumps(User), ex=REDIS_KEY_EXP)
-                self.log(User,"上线了", self.get_world_name(User.location))
+                self.logger(User,StatusText.Online, self.get_world_name(User.location))
             else:
                 oldUser=pickle.loads(self.rserver.get(keyname))
                 if oldUser.location!=User.location:
-                    self.log(User,"进入了世界", self.get_world_name(User.location))
+                    self.logger(User,StatusText.ChangeWorld, self.get_world_name(User.location))
                 if oldUser.currentAvatarImageUrl!=User.currentAvatarImageUrl:
-                    self.log(User,"更换了角色", User.currentAvatarImageUrl)
+                    self.logger(User,StatusText.ChangeAvatar, User.currentAvatarImageUrl)
                 if oldUser.status!=User.status:
-                    self.log(User,"更改了个人状态", User.status)
+                    self.logger(User,StatusText.ChangeStatus, User.status)
                 if  oldUser.statusDescription!=User.statusDescription:
-                    self.log(User,"更改了个人描述", User.statusDescription)
+                    self.logger(User,StatusText.ChangeDescription, User.statusDescription)
 
                 self.rserver.set(keyname, pickle.dumps(User), ex=REDIS_KEY_EXP)
     def get_world_name(self,location):
@@ -50,8 +52,8 @@ class VRchat:
             if name is None:
                 name=self.api.get_world_name(wid)
                 if name:
-                    self.rserver.hset(REDIS_KEY_WORLD,key=wid,value=name.encode("utf8"))
-            else:name=name.decode("utf8")
+                    self.rserver.hset(REDIS_KEY_WORLD,key=wid,value=name)
+            else:name=name.decode('utf8')
             return "%s:%s"%(name,id)
         else:
             return location
@@ -69,8 +71,8 @@ class VRchat:
                     if "Online" in data:
                         usr_id=data.split("Online:")[-1]
                         usr_name=self.api.get_user_name(usr_id)
-                        logging.info(MSG_TEXT_FORMAT% (usr_name, "下线了",'offline'))
-                        l = Log(usr_id,usr_name,"下线了","offline")
+                        logging.info(MSG_TEXT_FORMAT% (usr_name, StatusText.Offline,StatusText.OfflineText))
+                        l = Log(usr_id,usr_name,StatusText.Offline,StatusText.OfflineText)
                         t = Thread(target=l.save)
                         t.start()
             else:
@@ -98,3 +100,5 @@ class VRchat:
 if __name__ == '__main__':
     vrc=VRchat()
     vrc.loop()
+
+#    rserver.lpush(REDIS_NOTIFICATION_QUEUE,DISCORD_MSG_TEXT_FORMAT%("abcdefghij",'上线了','VRChat Home:1 12345678900'))

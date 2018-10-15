@@ -3,6 +3,7 @@ import logging
 import sys
 import os
 import pickle
+from models.mysql_model import  StatusText
 
 logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %I:%M:%S',level=logging.INFO,stream=sys.stdout)
 
@@ -39,3 +40,6 @@ def load_session():
             session = pickle.load(file)
             logging.info("Load session from session.pkl")
         return session
+
+
+
