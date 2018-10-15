@@ -74,7 +74,7 @@ class VRchat:
                         t = Thread(target=l.save)
                         t.start()
             else:
-                time.sleep(1)
+                time.sleep(0.1)
 
     def loop(self):
         msg = Thread(target=self.rcv_redis_message)
