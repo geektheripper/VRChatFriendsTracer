@@ -6,6 +6,13 @@ priv={1:["StatusText.Online","StatusText.Offline"],
        4:["StatusText.Online","StatusText.Offline","StatusText.ChangeWorld","StatusText.ChangeAvatar",'StatusText.ChangeDescription','StatusText.ChangeStatus'],
        }
 
+
+def get_channel(channels, channel_name):
+    for channel in channels:
+        if channel.name == channel_name:
+            return channel
+    return None
+
 def log_to_text(Log,level):
     text = str(StatusText(Log.text))
     if text not in priv[level]:

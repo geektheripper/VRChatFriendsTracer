@@ -5,11 +5,6 @@ import pickle
 from bot.modules.utils import log_to_text
 from bot.modules.discordUtils import safeSend
 
-def get_channel(channels, channel_name):
-    for channel in channels:
-        if channel.name == channel_name:
-            return channel
-    return None
 
 async def notificationTask(client):
     await client.wait_until_ready()

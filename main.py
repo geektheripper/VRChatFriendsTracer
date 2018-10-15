@@ -100,5 +100,3 @@ class VRchat:
 if __name__ == '__main__':
     vrc=VRchat()
     vrc.loop()
-
-#    rserver.lpush(REDIS_NOTIFICATION_QUEUE,DISCORD_MSG_TEXT_FORMAT%("abcdefghij",'上线了','VRChat Home:1 12345678900'))

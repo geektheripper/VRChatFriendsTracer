@@ -35,12 +35,7 @@ class StatusText(Enum):
     OfflineText='offline'
 
 
-if __name__ == '__main__a':
+if __name__ == '__main__':
     #create table
     from models import engine
     Model.metadata.create_all(bind=engine)
-
-
-if __name__ == '__main__':
-    a=StatusText("上线了")
-    print(a)
