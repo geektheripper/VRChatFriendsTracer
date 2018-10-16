@@ -17,9 +17,9 @@ class VRchat:
         self.api=VRChatAPI.init()
         self.rserver=rserver
     def logger(self,User,text,target):
-        msg=MSG_TEXT_FORMAT%(User.displayName,text.value,target)
+        msg=MSG_TEXT_FORMAT%(User.displayName,text,target)
         logging.info(msg)
-        log=Log(User.id,User.displayName,text.value,target)
+        log=Log(User.id,User.displayName,text,target)
         self.rserver.lpush(REDIS_NOTIFICATION_QUEUE,pickle.dumps(log))
         t=Thread(target=log.save)
         t.start()
@@ -32,17 +32,17 @@ class VRchat:
             keyname=REDIS_KEY_UID%User.id
             if not self.rserver.exists(keyname):
                 self.rserver.set(keyname, pickle.dumps(User), ex=REDIS_KEY_EXP)
-                self.logger(User,StatusText.Online, self.get_world_name(User.location))
+                self.logger(User,StatusText.Online.value, self.get_world_name(User.location))
             else:
                 oldUser=pickle.loads(self.rserver.get(keyname))
                 if oldUser.location!=User.location:
-                    self.logger(User,StatusText.ChangeWorld, self.get_world_name(User.location))
+                    self.logger(User,StatusText.ChangeWorld.value, self.get_world_name(User.location))
                 if oldUser.currentAvatarImageUrl!=User.currentAvatarImageUrl:
-                    self.logger(User,StatusText.ChangeAvatar, User.currentAvatarImageUrl)
+                    self.logger(User,StatusText.ChangeAvatar.value, User.currentAvatarImageUrl)
                 if oldUser.status!=User.status:
-                    self.logger(User,StatusText.ChangeStatus, User.status)
+                    self.logger(User,StatusText.ChangeStatus.value, User.status)
                 if  oldUser.statusDescription!=User.statusDescription:
-                    self.logger(User,StatusText.ChangeDescription, User.statusDescription)
+                    self.logger(User,StatusText.ChangeDescription.value, User.statusDescription)
 
                 self.rserver.set(keyname, pickle.dumps(User), ex=REDIS_KEY_EXP)
     def get_world_name(self,location):
@@ -70,13 +70,12 @@ class VRchat:
                     data=message['data'].decode("utf8")
                 except:pass
                 else:
-                    if "Online" in data:
-                        usr_id=data.split("Online:")[-1]
-                        usr_name=self.api.get_user_name(usr_id)
-                        logging.info(MSG_TEXT_FORMAT% (usr_name, StatusText.Offline,StatusText.OfflineText))
-                        l = Log(usr_id,usr_name,StatusText.Offline,StatusText.OfflineText)
-                        t = Thread(target=l.save)
-                        t.start()
+                    if ":" in data:
+                        User=UserModel()
+                        User.id=data.split(":")[-1]
+                        User.displayName=self.api.get_user_name(User.id)
+                        self.logger(User,StatusText.Offline.value,StatusText.OfflineText.value)
+
             else:
                 time.sleep(0.1)
 

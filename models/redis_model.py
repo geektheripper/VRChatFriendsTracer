@@ -9,8 +9,9 @@ class UserModel:
     statusDescription=''
     location=''
 
-    def __init__(self,data):
-        self.set_attrs(data)
+    def __init__(self,data=None):
+        if isinstance(data,dict):
+            self.set_attrs(data)
 
     def set_attrs(self, attrs):
         for key, value in attrs.items():

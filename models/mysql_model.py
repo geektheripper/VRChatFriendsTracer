@@ -32,7 +32,7 @@ class StatusText(Enum):
     ChangeAvatar="更换了角色"
     ChangeStatus="更改了个人状态"
     ChangeDescription="更改了个人描述"
-    OfflineText='offline'
+    OfflineText=''
 
 
 if __name__ == '__main__':

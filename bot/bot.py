@@ -19,7 +19,8 @@ class VRCBot(discord.Client):
         if message.content.startswith('!start'):
              if self.current_channel==None:
                      await message.channel.send('开启上线提醒')
-             if self.current_channel!=message.channel:
+             elif self.current_channel!=message.channel:
+                     await self.current_channel.send('关闭当前频道提醒')
                      await message.channel.send('在当前频道开启提醒')
              self.current_channel = message.channel
         elif message.content.startswith('!stop'):
