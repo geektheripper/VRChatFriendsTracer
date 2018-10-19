@@ -40,16 +40,16 @@ class VRCBot(discord.Client):
             return
         #------------------------privilege judge-------------------------
         try:
-            userIsAdmin = message.author.permissions_in(message.channel).administrator
+            userIsManager = message.author.permissions_in(message.channel).manage_channels
         except AttributeError:
             # Happens if user has no roles
-            userIsAdmin = False
+            userIsManager = False
         #------------------------privilege judge-------------------------
 
         message.content = message.content.lower()
 
         #-----------------------------------------------------addd channel-----------------------------------------------------
-        if userIsAdmin and message.content.startswith(PREFIX + "addchannel"):
+        if userIsManager and message.content.startswith(PREFIX + "addchannel"):
             # Add channel ID to subbed channels
             replyMsg = "This channel has been added to the launch notification service"
             await redisConn.setDefaultConfig(message.channel.id)
@@ -69,7 +69,7 @@ class VRCBot(discord.Client):
 
             await safeSend(message.channel, text=replyMsg)
         #-------------------------------------------------------remove channel--------------------------------------------------
-        elif userIsAdmin and message.content.startswith(PREFIX + "removechannel"):
+        elif userIsManager and message.content.startswith(PREFIX + "removechannel"):
             # Remove channel ID from subbed channels
             replyMsg = "This channel has been removed from the launch notification service"
 
@@ -94,7 +94,7 @@ class VRCBot(discord.Client):
         #-------------------------------------------addping------------------------------------------
         # Add/remove ping commands
 
-        elif message.content.startswith(PREFIX + "add"):
+        elif message.content.startswith(PREFIX + "addping"):
             channelID = message.channel.id
             friendsToMetion=[f for f in message.content.split(" ")[1:] if not f.startswith("<@")]
             if "" in friendsToMetion:
@@ -103,7 +103,7 @@ class VRCBot(discord.Client):
             if not rolesToMention:
                 rolesToMention.append(message.author.mention)
             if not friendsToMetion:
-                replyMsg = "Invalid input for add command"
+                replyMsg = "Invalid input for addping command"
 
             else:
                 replyMsg = "Added friend(s) {} to mention {}".format(' '.join(friendsToMetion)," ".join(rolesToMention))
@@ -121,7 +121,7 @@ class VRCBot(discord.Client):
 
             await safeSend(message.channel, text=replyMsg)
 
-        elif message.content.startswith(PREFIX + "rm"):
+        elif message.content.startswith(PREFIX + "rmping"):
             channelID = message.channel.id
             friendsToRemove = [f for f in message.content.split(" ")[1:] if not f.startswith("<@")]
             if "" in friendsToRemove:
@@ -130,7 +130,7 @@ class VRCBot(discord.Client):
             if not rolesToRemove:
                 rolesToRemove.append(message.author.mention)
             if not friendsToRemove:
-                replyMsg = "Invalid input for rm command"
+                replyMsg = "Invalid input for rmping command"
 
             else:
                 successed=[]
@@ -162,12 +162,12 @@ class VRCBot(discord.Client):
                      replyMsg = "This channel's mentions list is null"
             await safeSend(message.channel, text=replyMsg)
         # -------------------------------------------end------------------------------------------
-        elif userIsAdmin and message.content.startswith(PREFIX+"show"):
+        elif userIsManager and message.content.startswith(PREFIX+"show"):
             if message.content.split(" ")[1]=="config":
                 config=await redisConn.getChannelConfig(message.channel.id)
                 replyMsg="This channel's config is :\n"+str(config)
                 await safeSend(message.channel, text=replyMsg)
-        elif userIsAdmin and message.content.startswith(PREFIX+"set"):
+        elif userIsManager and message.content.startswith(PREFIX+"set"):
             channelID=message.channel.id
             channelConfig = await redisConn.getChannelConfig(channelID)
             key,value,*args=message.content.split(" ")[1:]
@@ -192,7 +192,7 @@ class VRCBot(discord.Client):
             except Exception as e:
                 replyMsg="set command error"
             await safeSend(message.channel, text=replyMsg)
-        elif userIsAdmin and message.content.startswith(PREFIX+"restore default"):
+        elif userIsManager and message.content.startswith(PREFIX+"restore default"):
             replyMsg="This channel's configuration has been restored to default"
             ret=await redisConn.setDefaultConfig(message.channel.id)
             if not ret:
