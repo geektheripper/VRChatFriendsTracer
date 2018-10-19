@@ -12,7 +12,7 @@ priv={ 0:[],
 
 def nameInMention(name,mentions):
     for key in mentions.keys():
-        if key in name:
+        if key in name.lower():
             return True,key,mentions[key]
     return False,None,None
 
