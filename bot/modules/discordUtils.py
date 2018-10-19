@@ -1,3 +1,4 @@
+#coding=utf-8
 """
 Extra things to make the discord library nicer
 """

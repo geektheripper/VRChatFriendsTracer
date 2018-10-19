@@ -20,7 +20,7 @@ class VRchat:
         msg=MSG_TEXT_FORMAT%(User.displayName,text,target)
         logging.info(msg)
         log=Log(User.id,User.displayName,text,target)
-        self.rserver.lpush(REDIS_NOTIFICATION_QUEUE,pickle.dumps(log))
+        self.rserver.rpush(REDIS_NOTIFICATION_QUEUE,pickle.dumps(log))
         t=Thread(target=log.save)
         t.start()
 
@@ -77,7 +77,7 @@ class VRchat:
                         self.logger(User,StatusText.Offline.value,StatusText.OfflineText.value)
 
             else:
-                time.sleep(0.1)
+                time.sleep(BOT_LOOP_DELAY)
 
     def loop(self):
         msg = Thread(target=self.rcv_redis_message)
@@ -103,7 +103,7 @@ def bot():
     bot = VRCBot()
     bot.run(DISCORD_TOKEN)
 if __name__ == '__main__':
+    vrc=VRchat()
     t=Process(target=bot)
     t.start()
-    vrc=VRchat()
     vrc.loop()
