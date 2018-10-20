@@ -16,6 +16,17 @@ def nameInMention(name,mentions):
             return True,key,mentions[key]
     return False,None,None
 
+async def getDisplayName(self,mentions):
+    if isinstance(mentions,list):
+        displayName=[]
+        for mention in mentions:
+            user=await self.get_user_info(mention[2:-1])
+            displayName.append(f'@{user.display_name}')
+        return displayName
+    elif isinstance(mentions,str):
+        user = await self.get_user_info(mentions[2:-1])
+        return f'@{user.display_name}'
+    else:return ""
 
 def Log2Text(Log,channelConfig):
     mentions=channelConfig["mentions"]
@@ -34,7 +45,7 @@ def Log2Text(Log,channelConfig):
                 Log.target=Log.target[:16]+"…"
                 if len(Log.displayName)>14:
                     if re.search("\s[0-9a-f]{4}",Log.displayName[-4:]):
-                        Log.displayName=Log.displayName[-5:]
+                        Log.displayName=Log.displayName[:-5]
                     if len(Log.displayName)>15:
                         Log.displayName=Log.displayName[:14]+"…"
             replyMsg = "%(displayName)-15s %(text)-10s %(target)s"%Log.__dict__

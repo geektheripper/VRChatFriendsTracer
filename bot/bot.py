@@ -9,6 +9,7 @@ from bot.modules import backgroundTasks
 from bot.modules import errors
 import logging
 from bot.modules.discordUtils import safeSend
+from bot.modules.utils import getDisplayName
 logger = logging.getLogger(__name__)
 logger.info("Starting bot")
 
@@ -49,7 +50,10 @@ class VRCBot(discord.Client):
         message.content = message.content.lower()
 
         #-----------------------------------------------------addd channel-----------------------------------------------------
-        if userIsManager and message.content.startswith(PREFIX + "addchannel"):
+        if message.content.startswith(PREFIX + "addchannel"):
+            if not userIsManager:
+                replyMsg="You don't have permission to addchannel"
+                return await safeSend(message.channel,text=replyMsg)
             # Add channel ID to subbed channels
             replyMsg = "This channel has been added to the launch notification service"
             await redisConn.setDefaultConfig(message.channel.id)
@@ -69,7 +73,10 @@ class VRCBot(discord.Client):
 
             await safeSend(message.channel, text=replyMsg)
         #-------------------------------------------------------remove channel--------------------------------------------------
-        elif userIsManager and message.content.startswith(PREFIX + "removechannel"):
+        elif message.content.startswith(PREFIX + "removechannel"):
+            if not userIsManager:
+                replyMsg="You don't have permission to removechannel"
+                return await safeSend(message.channel,text=replyMsg)
             # Remove channel ID from subbed channels
             replyMsg = "This channel has been removed from the launch notification service"
 
@@ -94,7 +101,7 @@ class VRCBot(discord.Client):
         #-------------------------------------------addping------------------------------------------
         # Add/remove ping commands
 
-        elif message.content.startswith(PREFIX + "addping"):
+        elif message.content.startswith(PREFIX + "add "):
             channelID = message.channel.id
             friendsToMetion=[f for f in message.content.split(" ")[1:] if not f.startswith("<@")]
             if "" in friendsToMetion:
@@ -103,10 +110,11 @@ class VRCBot(discord.Client):
             if not rolesToMention:
                 rolesToMention.append(message.author.mention)
             if not friendsToMetion:
-                replyMsg = "Invalid input for addping command"
+                replyMsg = "Invalid input for add command"
 
             else:
-                replyMsg = "Added friend(s) {} to mention {}".format(' '.join(friendsToMetion)," ".join(rolesToMention))
+                rolesToDisplay=await getDisplayName(self,rolesToMention)
+                replyMsg = "Add friend(s) {} to mention {}".format(' '.join(friendsToMetion)," ".join(rolesToDisplay))
                 new={}
                 for f in friendsToMetion:
                     new[f]=rolesToMention
@@ -121,7 +129,7 @@ class VRCBot(discord.Client):
 
             await safeSend(message.channel, text=replyMsg)
 
-        elif message.content.startswith(PREFIX + "rmping"):
+        elif message.content.startswith(PREFIX + "rm "):
             channelID = message.channel.id
             friendsToRemove = [f for f in message.content.split(" ")[1:] if not f.startswith("<@")]
             if "" in friendsToRemove:
@@ -130,12 +138,13 @@ class VRCBot(discord.Client):
             if not rolesToRemove:
                 rolesToRemove.append(message.author.mention)
             if not friendsToRemove:
-                replyMsg = "Invalid input for rmping command"
+                replyMsg = "Invalid input for rm command"
 
             else:
                 successed=[]
                 keyNotExists=[]
                 rolesNotExists=[]
+                pop=[]
                 channelConfig = await redisConn.getChannelConfig(channelID)
                 try:
                     for f in friendsToRemove:
@@ -144,7 +153,12 @@ class VRCBot(discord.Client):
                                     if r in channelConfig['mentions'][f]:
                                         channelConfig['mentions'][f].remove(r)
                                         successed.append((f,r))
-                                    else:rolesNotExists.append((f,r))
+                                    else:
+                                        if channelConfig['mentions'][f]==[]:
+                                            channelConfig['mentions'].pop(f)
+                                            pop.append(f)
+                                        else:
+                                            rolesNotExists.append((f,r))
                             else:
                                 keyNotExists.append((f,r))
 
@@ -157,15 +171,30 @@ class VRCBot(discord.Client):
                     for f,r in keyNotExists:
                         replyMsg+=f"Failed to remove {f}'s mention for {r},no friends named {f}.\n"
                     for f,r in rolesNotExists:
-                        replyMsg+=f"{f} is already removed for {r}.\n"
+                        replyMsg+=f"{f} has already removed for {r}.\n"
+                    for f in pop:
+                        replyMsg+=f"{f} has been deleted in config"
                 except TypeError and KeyError as e:
-                     replyMsg = "This channel's mentions list is null"
+                     replyMsg = "An error occurred when removing mentions"
             await safeSend(message.channel, text=replyMsg)
         # -------------------------------------------end------------------------------------------
         elif userIsManager and message.content.startswith(PREFIX+"show"):
             if message.content.split(" ")[1]=="config":
-                config=await redisConn.getChannelConfig(message.channel.id)
-                replyMsg="This channel's config is :\n"+str(config)
+                try:
+                    map={}
+                    config=await redisConn.getChannelConfig(message.channel.id)
+                    for friend, roles in config['mentions'].items():
+                        for mention in roles:
+                            if mention not in map.keys():
+                                ret=await getDisplayName(self,mention)
+                                if ret:
+                                    map[mention] =ret
+                    config_text=str(config)
+                    for id,displayName in map.items():
+                        config_text=config_text.replace(id,displayName)
+                    replyMsg="This channel's config is :\n"+config_text
+                except Exception as e:
+                    replyMsg="An error occurred when showing config"
                 await safeSend(message.channel, text=replyMsg)
         elif userIsManager and message.content.startswith(PREFIX+"set"):
             channelID=message.channel.id
