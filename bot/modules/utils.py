@@ -34,6 +34,7 @@ def Log2Text(Log,channelConfig):
     mentions=channelConfig["mentions"]
     level=channelConfig["level"]
     verbose=channelConfig["verbose"]
+    atLevel=channelConfig.get('atlevel',level)
     ret,key,roles=nameInMention(Log.displayName,mentions)
     replyMsg = ""
     if verbose or ret:
@@ -53,6 +54,8 @@ def Log2Text(Log,channelConfig):
             replyMsg = "%(displayName)-15s %(text)-10s %(target)s"%Log.__dict__
         if ret:
             replyMsg+="\n"+" ".join(roles)
-        if text not in priv[level]:
-            replyMsg=""
+        if text in priv[level] or (text in priv[atLevel] and ret):
+            pass
+        else:
+                replyMsg=""
     return replyMsg

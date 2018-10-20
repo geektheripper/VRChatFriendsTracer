@@ -201,7 +201,7 @@ class VRCBot(discord.Client):
             channelConfig = await redisConn.getChannelConfig(channelID)
             key,value,*args=message.content.split(" ")[1:]
             try:
-                if key=="level" and 0<=int(value)<=4:
+                if (key=="level" or key=="atlevel") and 0<=int(value)<=4:
                         channelConfig.update({key:int(value)})
                 elif key=="verbose":
                         if value=="true":
