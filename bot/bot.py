@@ -173,7 +173,7 @@ class VRCBot(discord.Client):
                     for f,r in rolesNotExists:
                         replyMsg+=f"{f} has already removed for {r}.\n"
                     for f in pop:
-                        replyMsg+=f"{f} has been deleted in config"
+                        replyMsg+=f"{f} has been deleted in config.\n"
                 except TypeError and KeyError as e:
                      replyMsg = "An error occurred when removing mentions"
             await safeSend(message.channel, text=replyMsg)
