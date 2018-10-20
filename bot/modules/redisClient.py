@@ -109,7 +109,7 @@ class redisClient(StrictRedis):
         if config:
             return config
         else:
-            await self.setDefaultConfig()
+            await self.setDefaultConfig(channelID)
             await self.getChannelConfig(channelID)
 
     async  def setDefaultConfig(self,channelID):

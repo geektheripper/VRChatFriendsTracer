@@ -20,10 +20,12 @@ async def getDisplayName(self,mentions):
     if isinstance(mentions,list):
         displayName=[]
         for mention in mentions:
+            mention=mention.replace("!","")
             user=await self.get_user_info(mention[2:-1])
             displayName.append(f'@{user.display_name}')
         return displayName
     elif isinstance(mentions,str):
+        mentions = mentions.replace("!", "")
         user = await self.get_user_info(mentions[2:-1])
         return f'@{user.display_name}'
     else:return ""

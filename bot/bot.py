@@ -106,7 +106,7 @@ class VRCBot(discord.Client):
             friendsToMetion=[f for f in message.content.split(" ")[1:] if not f.startswith("<@")]
             if "" in friendsToMetion:
                 friendsToMetion.remove("")
-            rolesToMention=re.findall('(<@\d+>)',message.content)
+            rolesToMention=re.findall('(<@!?\d+>)',message.content)
             if not rolesToMention:
                 rolesToMention.append(message.author.mention)
             if not friendsToMetion:
@@ -134,7 +134,7 @@ class VRCBot(discord.Client):
             friendsToRemove = [f for f in message.content.split(" ")[1:] if not f.startswith("<@")]
             if "" in friendsToRemove:
                 friendsToRemove.remove("")
-            rolesToRemove = re.findall('(<@\d+>)', message.content)
+            rolesToRemove = re.findall('(<@!?\d+>)', message.content)
             if not rolesToRemove:
                 rolesToRemove.append(message.author.mention)
             if not friendsToRemove:
