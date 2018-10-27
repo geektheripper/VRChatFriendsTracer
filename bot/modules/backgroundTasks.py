@@ -21,7 +21,7 @@ async def notificationTask(client):
                 for channelID in subbedChannelIDs:
                     channelConfig = await redisConn.getChannelConfig(channelID)
                     channel = client.get_channel(channelID)
-                    await safeSend(channel,text=Log2Text(Log,channelConfig))
+                    asyncio.create_task(safeSend(channel,text=Log2Text(Log,channelConfig)))
         else:
             await asyncio.sleep(BOT_LOOP_DELAY)
 
