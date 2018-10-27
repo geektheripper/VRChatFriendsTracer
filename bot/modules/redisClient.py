@@ -123,7 +123,20 @@ class redisClient(StrictRedis):
         if Log:
             return Log
         return 0
-
+    async def scanAll(self,match):
+        try:
+            results = []
+            cur, ret = await redisConn.scan(0, match, 1000)
+            results += ret
+            while cur != 0:
+                cur, ret = redisConn.scan(cur, match , 1000)
+                results += ret
+            if not ret:
+                return 0
+            return [i.decode('utf8') for i in ret]
+        except Exception as e:
+            logger.error(f"Failed to scanAll data from Redis: match: {match} error: {type(e).__name__}: {e}")
+            return 0
 
 
 

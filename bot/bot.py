@@ -178,7 +178,9 @@ class VRCBot(discord.Client):
                      replyMsg = "An error occurred when removing mentions"
             await safeSend(message.channel, text=replyMsg)
         # -------------------------------------------end------------------------------------------
+
         elif userIsManager and message.content.startswith(PREFIX+"show"):
+
             if message.content.split(" ")[1]=="config":
                 try:
                     map={}
@@ -196,10 +198,28 @@ class VRCBot(discord.Client):
                 except Exception as e:
                     replyMsg="An error occurred when showing config"
                 await safeSend(message.channel, text=replyMsg)
+
+            if message.content.split(" ")[1] == "online":
+                results=[]
+                ret=await redisConn.scanAll(REDIS_KEY_UID.replace("%s","*"))
+                if ret:
+                    for key in ret:
+                        User = await redisConn.safeGet(key, deserialize=True)
+                        if User:
+                            results.append(User)
+                    onlines="\n".join([User.displayName for User in results])
+                    replyMsg="Total Count {}:\n{}".format(len(ret),onlines)
+                else:
+                    replyMsg="An error occured when show online users"
+                await safeSend(message.channel,text=replyMsg)
+
+
         elif userIsManager and message.content.startswith(PREFIX+"set"):
+
             channelID=message.channel.id
             channelConfig = await redisConn.getChannelConfig(channelID)
             key,value,*args=message.content.split(" ")[1:]
+
             try:
                 if (key=="level" or key=="atlevel") and 0<=int(value)<=4:
                         channelConfig.update({key:int(value)})
@@ -221,13 +241,13 @@ class VRCBot(discord.Client):
             except Exception as e:
                 replyMsg="set command error"
             await safeSend(message.channel, text=replyMsg)
+            
         elif userIsManager and message.content.startswith(PREFIX+"restore default"):
             replyMsg="This channel's configuration has been restored to default"
             ret=await redisConn.setDefaultConfig(message.channel.id)
             if not ret:
                 return await safeSend(message.channel, embed=errors.dbErrorEmbed)
             await safeSend(message.channel, text=replyMsg)
-
 if __name__ == '__main__':
     bot = VRCBot()
     bot.run(DISCORD_TOKEN)
