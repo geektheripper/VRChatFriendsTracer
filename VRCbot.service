@@ -1,0 +1,17 @@
+[Unit]
+Description=VRChat-Bot Service
+After=network.target
+After=systemd-user-sessions.service
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/{user}/VRChatFriendsTracer/
+# -u otherwise journal wont show print() output
+ExecStart=/home/{user}/anaconda3/bin/python3 -u main.py
+Restart=always
+RestartSec=10
+StandardOutput=file:/var/log/VRCbot.log
+StandardError=file:/var/log/VRCbot.err
+[Install]
+WantedBy=multi-user.target
